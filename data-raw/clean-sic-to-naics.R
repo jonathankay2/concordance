@@ -78,7 +78,7 @@ sic87_naics97 <- sic87_naics97 %>%
   filter(nchar(SIC) != ".") %>%
   filter(`1997 NAICS` != ".") %>%
   rename(SIC_10d = SIC,
-         NAICS_6d = `1997 NAICS`) 
+         NAICS_10d = `1997 NAICS`) 
 
 # check digits
 ## SIC:3, 4, NAICS: 2, 3, 5, 6
@@ -86,16 +86,18 @@ sic87_naics97$SIC_10d%>%
   nchar()%>%
   table()
 
-sic87_naics97$NAICS_6d%>%
+sic87_naics97$NAICS_10d%>%
   nchar()%>%
   table()
 
 # mutate
 sic87_naics97 <- sic87_naics97 %>%
-  mutate(#SIC_10d = str_pad(SIC_10d, 10, side = "left", pad = "0"),
+  mutate(SIC_10d = str_pad(SIC_10d, 10, side = "right", pad = "X"),
          #SIC_6d = str_sub(SIC_10d, start = 1, end = 6),
          SIC_4d = str_sub(SIC_10d, start = 1, end = 4),
          SIC_2d = str_sub(SIC_10d, start = 1, end = 2),
+         NAICS_10d = str_pad(NAICS_10d, 10, side = "right", pad = "X"),
+         NAICS_6d = str_sub(NAICS_10d, start = 1, end = 6),
          NAICS_5d = str_sub(NAICS_6d, start = 1, end = 5),
          NAICS_4d = str_sub(NAICS_6d, start = 1, end = 4),
          NAICS_3d = str_sub(NAICS_6d, start = 1, end = 3),
@@ -131,25 +133,107 @@ save(sic87_naics97,
 # SIC 1987 to NAICS 2002 (not completed yet 07/15/2023)
 ################################################################################
 
-# s87n02.data <- read_excel("1987_SIC_to_2002_NAICS.xls")
-# n02s87.data <- read_excel("2002_NAICS_to_1987_SIC.xls")
+s87n02.data <- read_excel("1987_SIC_to_2002_NAICS.xls")
+n02s87.data <- read_excel("2002_NAICS_to_1987_SIC.xls")
+
+# align names of variables
+# s87n02.data$`NAICS Part Indicator` <- NA
+# s87n02.data$`SIC Part Indicator` <- s87n02.data$`Part Indicator`
+# s87n02.data$`Part Indicator` <- NULL
 # 
-# s87n02.data %>%
-#   pull(SIC) %>%
-#   unique() %>%
-#   sort()
+# s87n02.data$`SIC Title and Part Description` <- s87n02.data$`SIC Titles and Part Descriptions`
+# s87n02.data$`SIC Titles and Part Descriptions` <- NULL
 # 
-# n_distinct(s87n02.data$SIC)
-# 
-# n02s87.data %>%
-#   pull(SIC) %>%
-#   unique() %>%
-#   sort()
-# 
-# n_distinct(n02s87.data$`2002 NAICS`)
-# 
-# 
-# setdiff(exp.data$commodity, imp.data$commodity)
-# setdiff(imp.data$commodity, exp.data$commodity)
+# s87n02.data$`1902 NAICS Title` <- s87n02.data$`1902 NAICS Titles and Part Indicators`
+# s87n02.data$`1902 NAICS Titles and Part Indicators` <- NULL
+
+
+
+# check
+
+s87n02.data %>%
+  pull(SIC) %>%
+  unique() %>%
+  sort()
+
+n_distinct(s87n02.data$SIC)
+#1005
+
+n02s87.data %>%
+  pull(SIC) %>%
+  unique() %>%
+  sort()
+
+n_distinct(n02s87.data$`2002 NAICS`)
+#1180
+
+setdiff(s87n02.data$SIC, n02s87.data$SIC)
+# missing SIC codes in n02s87.data: numeric(0)
+
+setdiff(n02s87.data$SIC, s87n02.data$SIC)
+# missing SIC codes in s87n02.data: numeric(0)
+
+
+# combine all
+sic87_naics02 <- rbind(s87n02.data, n02s87.data)
+
+#change the order of variables
+#sic87_naics97 <- sic87_naics97[, c("C", "A", "B")]
+
+# clean
+sic87_naics02 <- sic87_naics02 %>%
+  select(SIC, `2002 NAICS`) %>%
+  filter(nchar(SIC) != ".") %>%
+  filter(`2002 NAICS` != ".") %>%
+  rename(SIC_10d = SIC,
+         NAICS_6d = `2002 NAICS`) 
+
+# check digits
+## SIC:3, 4, NAICS: 6
+sic87_naics02$SIC_10d%>%
+  nchar()%>%
+  table()
+
+sic87_naics02$NAICS_6d%>%
+  nchar()%>%
+  table()
+
+# mutate
+sic87_naics02 <- sic87_naics02 %>%
+  mutate(SIC_10d = str_pad(SIC_10d, 10, side = "right", pad = "X"),
+         #SIC_6d = str_sub(SIC_10d, start = 1, end = 6),
+         SIC_4d = str_sub(SIC_10d, start = 1, end = 4),
+         SIC_2d = str_sub(SIC_10d, start = 1, end = 2),
+         NAICS_10d = str_pad(NAICS_10d, 10, side = "right", pad = "X"),
+         NAICS_6d = str_sub(NAICS_10d, start = 1, end = 6),
+         NAICS_5d = str_sub(NAICS_6d, start = 1, end = 5),
+         NAICS_4d = str_sub(NAICS_6d, start = 1, end = 4),
+         NAICS_3d = str_sub(NAICS_6d, start = 1, end = 3),
+         NAICS_2d = str_sub(NAICS_6d, start = 1, end = 2)
+  ) %>%
+  arrange(SIC_10d) %>%
+  select(SIC_4d, SIC_2d,
+         NAICS_6d, NAICS_5d, NAICS_4d, NAICS_3d, NAICS_2d) %>%
+  distinct()
+
+
+#################################################
+# combine
+#hs_naics <- rbind(hs_naics, miss.rows) %>%
+#arrange(HS_6d)
+
+# fix unusual 2-digit NAICS codes
+sic87_naics02 <- sic87_naics02 %>%
+  mutate(NAICS_2d = if_else(NAICS_2d == "31", "31-33", NAICS_2d),
+         NAICS_2d = if_else(NAICS_2d == "32", "31-33", NAICS_2d),
+         NAICS_2d = if_else(NAICS_2d == "33", "31-33", NAICS_2d),
+         NAICS_2d = if_else(NAICS_2d == "44", "44-45", NAICS_2d),
+         NAICS_2d = if_else(NAICS_2d == "45", "44-45", NAICS_2d),
+         NAICS_2d = if_else(NAICS_2d == "48", "48-49", NAICS_2d),
+         NAICS_2d = if_else(NAICS_2d == "49", "48-49", NAICS_2d))
+
+# save
+save(sic87_naics02,
+     file = "./data/sic87_naics02.RData", compress = "xz")
 
 
