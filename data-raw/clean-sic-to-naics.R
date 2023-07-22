@@ -186,7 +186,7 @@ sic87_naics02 <- sic87_naics02 %>%
   filter(nchar(SIC) != ".") %>%
   filter(`2002 NAICS` != ".") %>%
   rename(SIC_10d = SIC,
-         NAICS_6d = `2002 NAICS`) 
+         NAICS_10d = `2002 NAICS`) 
 
 # check digits
 ## SIC:3, 4, NAICS: 6
@@ -194,7 +194,7 @@ sic87_naics02$SIC_10d%>%
   nchar()%>%
   table()
 
-sic87_naics02$NAICS_6d%>%
+sic87_naics02$NAICS_10d%>%
   nchar()%>%
   table()
 
