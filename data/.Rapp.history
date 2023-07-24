@@ -1,3 +1,4 @@
 load("/Users/siqichen/Documents/GitHub/concordance/data/hs0_desc.RData")
 load("/Users/siqichen/Documents/GitHub/concordance/data/hs1_naics.RData")
 load("/Users/siqichen/Documents/GitHub/concordance/data/hs0_naics.RData")
+load("/Users/siqichen/Documents/GitHub/concordance/data/hs_naics.RData")

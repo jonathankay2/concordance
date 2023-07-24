@@ -19,16 +19,12 @@ library(readxl)
 s87n97.data <- read_excel("1987_SIC_to_1997_NAICS.xls")
 n97s87.data <- read_excel("1997_NAICS_to_1987_SIC.xls")
 
-# align names of variables
-s87n97.data$`NAICS Part Indicator` <- NA
-s87n97.data$`SIC Part Indicator` <- s87n97.data$`Part Indicator`
-s87n97.data$`Part Indicator` <- NULL
+# select variables
+s87n97.data <- s87n97.data %>%
+  select(SIC, `1997 NAICS`)
 
-s87n97.data$`SIC Title and Part Description` <- s87n97.data$`SIC Titles and Part Descriptions`
-s87n97.data$`SIC Titles and Part Descriptions` <- NULL
-
-s87n97.data$`1997 NAICS Title` <- s87n97.data$`1997 NAICS Titles and Part Indicators`
-s87n97.data$`1997 NAICS Titles and Part Indicators` <- NULL
+n97s87.data <- n97s87.data %>%
+  select(SIC, `1997 NAICS`)
 
 # check
 s87n97.data %>%
@@ -81,7 +77,7 @@ sic87_naics97 <- sic87_naics97 %>%
          NAICS_10d = `1997 NAICS`) 
 
 # check digits
-## SIC:3, 4, NAICS: 2, 3, 5, 6
+## SIC:3, 4, (2-4 three columns) NAICS: 2, 3, 5, 6 (2-6 five columns)
 sic87_naics97$SIC_10d%>%
   nchar()%>%
   table()
@@ -92,11 +88,12 @@ sic87_naics97$NAICS_10d%>%
 
 # mutate
 sic87_naics97 <- sic87_naics97 %>%
-  mutate(SIC_10d = str_pad(SIC_10d, 10, side = "right", pad = "X"),
+  mutate(#SIC_10d = str_pad(SIC_10d, 10, side = "right", pad = "X"),
          #SIC_6d = str_sub(SIC_10d, start = 1, end = 6),
          SIC_4d = str_sub(SIC_10d, start = 1, end = 4),
+         SIC_3d = str_sub(SIC_10d, start = 1, end = 3),
          SIC_2d = str_sub(SIC_10d, start = 1, end = 2),
-         NAICS_10d = str_pad(NAICS_10d, 10, side = "right", pad = "X"),
+         #NAICS_10d = str_pad(NAICS_10d, 10, side = "right", pad = "X"),
          NAICS_6d = str_sub(NAICS_10d, start = 1, end = 6),
          NAICS_5d = str_sub(NAICS_6d, start = 1, end = 5),
          NAICS_4d = str_sub(NAICS_6d, start = 1, end = 4),
@@ -104,15 +101,20 @@ sic87_naics97 <- sic87_naics97 %>%
          NAICS_2d = str_sub(NAICS_6d, start = 1, end = 2)
          ) %>%
   arrange(SIC_10d) %>%
-  select(SIC_4d, SIC_2d,
+  select(SIC_4d, SIC_3d, SIC_2d,
          NAICS_6d, NAICS_5d, NAICS_4d, NAICS_3d, NAICS_2d) %>%
   distinct()
 
+# clean digits
+sic87_naics97 <- sic87_naics97 %>%
+  mutate(SIC_4d = ifelse(nchar(SIC_4d) == 4, SIC_4d, NA),
+         SIC_3d = ifelse(nchar(SIC_3d) == 3, SIC_3d, NA),
+         NAICS_6d = ifelse(nchar(NAICS_6d) == 6, NAICS_6d, NA),
+         NAICS_5d = ifelse(nchar(NAICS_5d) == 5, NAICS_5d, NA),
+         NAICS_4d = ifelse(nchar(NAICS_4d) == 4, NAICS_4d, NA),
+         NAICS_3d = ifelse(nchar(NAICS_3d) == 3, NAICS_3d, NA)
+         )
 
-#################################################
-# combine
-#hs_naics <- rbind(hs_naics, miss.rows) %>%
-  #arrange(HS_6d)
 
 # fix unusual 2-digit NAICS codes
 sic87_naics97 <- sic87_naics97 %>%
@@ -132,25 +134,18 @@ save(sic87_naics97,
 ################################################################################
 # SIC 1987 to NAICS 2002 (not completed yet 07/15/2023)
 ################################################################################
-
 s87n02.data <- read_excel("1987_SIC_to_2002_NAICS.xls")
 n02s87.data <- read_excel("2002_NAICS_to_1987_SIC.xls")
 
-# align names of variables
-# s87n02.data$`NAICS Part Indicator` <- NA
-# s87n02.data$`SIC Part Indicator` <- s87n02.data$`Part Indicator`
-# s87n02.data$`Part Indicator` <- NULL
-# 
-# s87n02.data$`SIC Title and Part Description` <- s87n02.data$`SIC Titles and Part Descriptions`
-# s87n02.data$`SIC Titles and Part Descriptions` <- NULL
-# 
-# s87n02.data$`1902 NAICS Title` <- s87n02.data$`1902 NAICS Titles and Part Indicators`
-# s87n02.data$`1902 NAICS Titles and Part Indicators` <- NULL
+# select variables
+s87n02.data <- s87n02.data %>%
+  select(SIC, `2002 NAICS`)
 
+n02s87.data <- n02s87.data %>%
+  select(SIC, `2002 NAICS`)
 
 
 # check
-
 s87n02.data %>%
   pull(SIC) %>%
   unique() %>%
@@ -200,27 +195,29 @@ sic87_naics02$NAICS_10d%>%
 
 # mutate
 sic87_naics02 <- sic87_naics02 %>%
-  mutate(SIC_10d = str_pad(SIC_10d, 10, side = "right", pad = "X"),
-         #SIC_6d = str_sub(SIC_10d, start = 1, end = 6),
-         SIC_4d = str_sub(SIC_10d, start = 1, end = 4),
-         SIC_2d = str_sub(SIC_10d, start = 1, end = 2),
-         NAICS_10d = str_pad(NAICS_10d, 10, side = "right", pad = "X"),
-         NAICS_6d = str_sub(NAICS_10d, start = 1, end = 6),
-         NAICS_5d = str_sub(NAICS_6d, start = 1, end = 5),
-         NAICS_4d = str_sub(NAICS_6d, start = 1, end = 4),
-         NAICS_3d = str_sub(NAICS_6d, start = 1, end = 3),
-         NAICS_2d = str_sub(NAICS_6d, start = 1, end = 2)
+  mutate(SIC_4d = str_sub(SIC_10d, start = 1, end = 4),
+    SIC_3d = str_sub(SIC_10d, start = 1, end = 3),
+    SIC_2d = str_sub(SIC_10d, start = 1, end = 2),
+    NAICS_6d = str_sub(NAICS_10d, start = 1, end = 6),
+    NAICS_5d = str_sub(NAICS_6d, start = 1, end = 5),
+    NAICS_4d = str_sub(NAICS_6d, start = 1, end = 4),
+    NAICS_3d = str_sub(NAICS_6d, start = 1, end = 3),
+    NAICS_2d = str_sub(NAICS_6d, start = 1, end = 2)
   ) %>%
   arrange(SIC_10d) %>%
-  select(SIC_4d, SIC_2d,
+  select(SIC_4d, SIC_3d, SIC_2d,
          NAICS_6d, NAICS_5d, NAICS_4d, NAICS_3d, NAICS_2d) %>%
   distinct()
 
-
-#################################################
-# combine
-#hs_naics <- rbind(hs_naics, miss.rows) %>%
-#arrange(HS_6d)
+# clean digits
+sic87_naics02 <- sic87_naics02 %>%
+  mutate(SIC_4d = ifelse(nchar(SIC_4d) == 4, SIC_4d, NA),
+         SIC_3d = ifelse(nchar(SIC_3d) == 3, SIC_3d, NA),
+         NAICS_6d = ifelse(nchar(NAICS_6d) == 6, NAICS_6d, NA),
+         NAICS_5d = ifelse(nchar(NAICS_5d) == 5, NAICS_5d, NA),
+         NAICS_4d = ifelse(nchar(NAICS_4d) == 4, NAICS_4d, NA),
+         NAICS_3d = ifelse(nchar(NAICS_3d) == 3, NAICS_3d, NA)
+  )
 
 # fix unusual 2-digit NAICS codes
 sic87_naics02 <- sic87_naics02 %>%
