@@ -710,8 +710,8 @@ save(bec4_desc,
 ################################################################################
 ## SIC 1987
 ################################################################################
-# https://www2.census.gov/programs-surveys/cbp/technical-documentation/records-layouts/sic-code-descriptions/sic86_87.txt
-# https://siccode.com/sic-code-lookup-directory
+## https://www.bls.gov/oes/special-requests/oessic87.pdf
+## https://siccode.com/sic-code-lookup-directory
 
 rm(list = ls())
 date()
@@ -721,44 +721,39 @@ library(tidyverse)
 library(readxl)
 library(stringr)
 
-des.raw <- read_excel("./data-raw/sic.decs.raw.xlsx")
-
+des.raw4 <- read_excel("./data-raw/1987_SIC_System.xlsx")
+des.raw23 <- read_excel("./data-raw/sic.decs.raw.xlsx")
 
 # clean 4 digits codes and descriptions
-sic.des <- des.raw
-sic.des$des4 <- str_trim(sic.des$des4, side = "left") 
-# sic.des$digits4 <- gsub("\\*", "", sic.des$digits4)
-# sic.des$digits4 <- str_replace_all(sic.des$digits4, "-", "")
-# sic.des$digits4 <- str_replace_all(sic.des$digits4, "\\\\", "")
-sic.des4 <- sic.des %>%
-  select(digits4, des4) %>%
-  filter(grepl("^\\d+$", digits4)) %>%
-  filter(!grepl("0$", digits4)) %>%
-  rename(code = digits4, desc = des4)
+sic.des4 <- des.raw4 %>%
+  select(digit4, SICdes) %>%
+  na.omit() %>%
+  #filter(grepl("^\\d+$", digit4)) %>%
+  filter(!grepl("0$", digit4)) %>%
+  mutate(digit4 = str_pad(digit4, width = 4, side = "left", pad = "0"))%>%
+  rename(code = digit4, desc = SICdes)
 
 # clean 2 digits codes and descriptions
-sic.des2 <- sic.des %>%
-  select(digits2, des2)%>%
-  filter(!is.na(digits2)) %>%
-  rename(code = digits2, desc = des2)
+sic.des2 <- des.raw23 %>%
+  select(digit2, desc2)%>%
+  filter(!grepl("0$", digit2)) %>%
+  mutate(digit2 = str_pad(digit2, width = 2, side = "left", pad = "0")) %>%
+  rename(code = digit2, desc = desc2)
 
-# clean 3 digits codes and descriptions  
-sic.des3 <- sic.des %>%
-  select(digits3, des3)%>%
-  filter(!is.na(digits3)) %>%
-  rename(code = digits3, desc = des3)
+# clean 3 digits codes and descriptions
+sic.des3 <- des.raw23 %>%
+  select(digit3, desc3)%>%
+  filter(!grepl("0$", digit3)) %>%
+  mutate(digit3 = str_pad(digit3, width = 3, side = "left", pad = "0")) %>%
+  rename(code = digit3, desc = desc3)
 
 # combine
 sic87_desc <- rbind(sic.des2, sic.des3, sic.des4) %>%
   arrange(code) %>%
-  distinct()
-
-#check NA
-table(is.na(sic87_desc))
-# FALSE 2256
+  distinct() %>%
+  na.omit()
 
 
 # save
 save(sic87_desc,
      file = "./data/sic87_desc.RData", compress = "xz")
-
