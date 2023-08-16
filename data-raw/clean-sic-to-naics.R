@@ -8,7 +8,7 @@ date()
 # load packages
 library(tidyverse)
 library(readxl)
-library(concordance)
+# library(concordance)
 
 ################################################################################
 # SIC 1987 (combined) to NAICS 1997 (combined)
@@ -72,11 +72,11 @@ table(nchar(s87n97.data$SIC))
 table(nchar(n97s87.data$SIC))
 
 # combine all
-sic87_naics97 <- rbind(s87n97.data, n97s87.data)
+sic87_naics97.r <- rbind(s87n97.data, n97s87.data)
 
 
-# clean
-sic87_naics97 <- sic87_naics97 %>%
+# change name
+sic87_naics97 <- sic87_naics97.r %>%
   select(SIC, `1997 NAICS`) %>%
   rename(NAICS = `1997 NAICS`) 
 
@@ -117,7 +117,8 @@ sic87_naics97 <- sic87_naics97 %>%
          NAICS_5d = ifelse(nchar(NAICS_5d) == 5, NAICS_5d, NA),
          NAICS_4d = ifelse(nchar(NAICS_4d) == 4, NAICS_4d, NA),
          NAICS_3d = ifelse(nchar(NAICS_3d) == 3, NAICS_3d, NA)) %>%
-  filter(!is.na(SIC_4d))
+  filter(!is.na(SIC_2d)) %>%
+  filter(!is.na(NAICS_2d))
 
 # fix unusual 2-digit NAICS codes
 sic87_naics97 <- sic87_naics97 %>%
@@ -177,11 +178,11 @@ table(nchar(s87n02.data$SIC))
 table(nchar(n02s87.data$SIC))
 
 # combine all
-sic87_naics02 <- rbind(s87n02.data, n02s87.data)
+sic87_naics02.r <- rbind(s87n02.data, n02s87.data)
 
 
-# clean
-sic87_naics02 <- sic87_naics02 %>%
+# change name
+sic87_naics02 <- sic87_naics02.r %>%
   select(SIC, `2002 NAICS`) %>%
   rename(NAICS = `2002 NAICS`) 
 
@@ -219,7 +220,7 @@ sic87_naics02 <- sic87_naics02 %>%
          NAICS_5d = ifelse(nchar(NAICS_5d) == 5, NAICS_5d, NA),
          NAICS_4d = ifelse(nchar(NAICS_4d) == 4, NAICS_4d, NA),
          NAICS_3d = ifelse(nchar(NAICS_3d) == 3, NAICS_3d, NA)) %>%
-  filter(!is.na(SIC_4d))
+  filter(!is.na(SIC_2d))
 
 # fix unusual 2-digit NAICS codes
 sic87_naics02 <- sic87_naics02 %>%
@@ -234,5 +235,38 @@ sic87_naics02 <- sic87_naics02 %>%
 # save
 save(sic87_naics02,
      file = "./data/sic87_naics02.RData", compress = "xz")
+
+######
+# check differences in naics 1997 and 2000 (need to load clean-sic-to-naics.R first)
+naics97 <- sic87_naics97.r %>% 
+  select('1997 NAICS') 
+
+naics02 <- sic87_naics02.r %>% 
+  select('2002 NAICS') 
+
+
+dif9702 <- setdiff(naics02$'2002 NAICS', naics97$'1997 NAICS') %>%
+  as_data_frame() %>%
+  distinct()
+View(dif9702)
+
+# Compare with naics2002_desc, 115 different values
+load("./data/naics2002_desc.RData")
+dif97.desc02 <- setdiff(naics97$'1997 NAICS', naics2002_desc$code) %>%
+  as_data_frame() %>%
+  distinct()
+View(dif97.desc02)
+
+# Compare naics2002_desc with naics02, no difference
+dif02.desc02 <- setdiff(naics02$'2002 NAICS', naics2002_desc$code) %>%
+  as_data_frame() %>%
+  distinct()
+View(dif02.desc02)
+
+# Need NAICS 1997 description
+
+
+
+#########draft
 
 
