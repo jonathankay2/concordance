@@ -13,10 +13,8 @@ library(readxl)
 ################################################################################
 # SIC 1987 (combined) to NAICS 1997 (combined)
 ################################################################################
-# load concordance data:
-# Pierce and Schott 2018 <https://faculty.som.yale.edu/peterschott/international-trade-data/>
-# Concordance of 1989-2017 US HS codes to US SIC, SITC and NAICS codes over time
-# https://spinup-000d1a-wp-offload-media.s3.amazonaws.com/faculty/wp-content/uploads/sites/47/2019/06/hssicnaics_20181015.zip
+# Concordance of 1987 US SIC to 1997 and 2002 NAICS codes
+# https://www.census.gov/naics/?68967
 s87n97.data.r <- read_excel("./data-raw/1987_SIC_to_1997_NAICS.xls")
 n97s87.data.r <- read_excel("./data-raw/1997_NAICS_to_1987_SIC.xls")
 

@@ -8,9 +8,19 @@ date()
 # load packages
 library(tidyverse)
 library(jsonlite)
+library(readxl)
+library(stringr)
 
 # # load previously cleaned data
 # load("./data/codedesc.rda")
+
+################################################################################
+## NAICS 1997
+################################################################################
+# load downloaded data from Census
+# https://www.census.gov/naics/?68967
+naics1997_desc
+
 
 
 ################################################################################
@@ -709,51 +719,157 @@ save(bec4_desc,
 
 ################################################################################
 ## SIC 1987
+## 2 digits and 3 
 ################################################################################
 ## https://www.bls.gov/oes/special-requests/oessic87.pdf
-## https://siccode.com/sic-code-lookup-directory
+## https://www.census.gov/naics/?68967
 
-rm(list = ls())
-date()
-
-# load packages
-library(tidyverse)
-library(readxl)
-library(stringr)
-
-des.raw4 <- read_excel("./data-raw/1987_SIC_System.xlsx")
-des.raw23 <- read_excel("./data-raw/sic.decs.raw.xlsx")
+### 4 digits codes come from BLS
+des.raw4 <- read_csv("./data-raw/1987_SIC_BLS.csv", col_types = "c")
+### 2 and 3 digits codes come from SICCODE.com
+# des.raw23 <- read_csv("./data-raw/sic.decs.raw.csv", col_types = "c")
 
 # clean 4 digits codes and descriptions
 sic.des4 <- des.raw4 %>%
   select(digit4, SICdes) %>%
   na.omit() %>%
-  #filter(grepl("^\\d+$", digit4)) %>%
-  filter(!grepl("0$", digit4)) %>%
-  mutate(digit4 = str_pad(digit4, width = 4, side = "left", pad = "0"))%>%
+  rename(code = digit4, desc = SICdes)
+
+# clean 3 digits codes and descriptions
+sic.des3 <- des.raw4 %>%
+  select(digit4, SICdes)%>%
+  na.omit() %>%
+  filter(grepl("0$", digit4)) %>%
+  mutate(digit4 = gsub("0$", "", digit4)) %>%
   rename(code = digit4, desc = SICdes)
 
 # clean 2 digits codes and descriptions
-sic.des2 <- des.raw23 %>%
-  select(digit2, desc2)%>%
-  filter(!grepl("0$", digit2)) %>%
-  mutate(digit2 = str_pad(digit2, width = 2, side = "left", pad = "0")) %>%
-  rename(code = digit2, desc = desc2)
-
-# clean 3 digits codes and descriptions
-sic.des3 <- des.raw23 %>%
-  select(digit3, desc3)%>%
-  filter(!grepl("0$", digit3)) %>%
-  mutate(digit3 = str_pad(digit3, width = 3, side = "left", pad = "0")) %>%
-  rename(code = digit3, desc = desc3)
+sic.des2 <- des.raw4 %>%
+  select(digit4, SICdes)%>%
+  na.omit() %>%
+  filter(grepl("00$", digit4)) %>%
+  mutate(digit4 = gsub("00$", "", digit4)) %>%
+  rename(code = digit4, desc = SICdes)
 
 # combine
 sic87_desc <- rbind(sic.des2, sic.des3, sic.des4) %>%
   arrange(code) %>%
+  distinct()
+  # na.omit()
+
+# first check if descriptions remained same in the Census files for different years
+s87n97.data.r <- read_excel("./data-raw/1987_SIC_to_1997_NAICS.xls") %>%
+  select(SIC, "SIC Titles and Part Descriptions") %>%
+  rename(Censusdes = "SIC Titles and Part Descriptions")  
+# check if we need to pad 0 to the left (only when there are 3-digit codes. Padding 0 to the left of 2-digit codes generates wrong codes like "0010")
+table(nchar(s87n97.data.r$SIC))
+
+n97s87.data.r <- read_excel("./data-raw/1997_NAICS_to_1987_SIC.xls") %>%
+  select(SIC, "SIC Title and Part Description") %>%
+  rename(Censusdes = "SIC Title and Part Description")
+# check if we need to pad 0 to the left (only when there are 3-digit codes. Padding 0 to the left of 2-digit codes generates wrong codes like "0010")
+table(nchar(n97s87.data.r$SIC))
+n97s87.data.r <- n97s87.data.r %>%
+  mutate(SIC = str_pad(SIC, width = 4, side = "left", pad = "0"))
+
+Census8797 <- rbind(s87n97.data.r, n97s87.data.r) %>%
+  arrange(SIC) %>%
+  distinct() %>%
+  na.omit() %>% 
+  group_by(SIC) %>%
+  slice(1) %>%
+  ungroup()
+
+
+s87n02.data.r <- read_excel("./data-raw/1987_SIC_to_2002_NAICS.xls") %>%
+  select(SIC, "SIC Title (and note)") %>%
+  rename(Censusdes = "SIC Title (and note)")
+# check if we need to pad 0 to the left (only when there are 3-digit codes. Padding 0 to the left of 2-digit codes generates wrong codes like "0010")
+table(nchar(s87n02.data.r$SIC))
+s87n02.data.r <- s87n02.data.r %>%
+  mutate(SIC = str_pad(SIC, width = 4, side = "left", pad = "0"))
+
+n02s87.data.r <- read_excel("./data-raw/2002_NAICS_to_1987_SIC.xls") %>%
+  select(SIC, "SIC Title (and note)") %>%
+  rename(Censusdes = "SIC Title (and note)")
+# check if we need to pad 0 to the left (only when there are 3-digit codes. Padding 0 to the left of 2-digit codes generates wrong codes like "0010")
+table(nchar(n02s87.data.r$SIC))
+n02s87.data.r <- n02s87.data.r%>%
+  mutate(SIC = str_pad(SIC, width = 4, side = "left", pad = "0"))
+
+
+Census8702 <- rbind(s87n02.data.r, n02s87.data.r) %>%
+  arrange(SIC) %>%
+  distinct() %>%
+  na.omit() %>% 
+  group_by(SIC) %>%
+  slice(1) %>%
+  ungroup()
+
+CensusSIC <- rbind(Census8797, Census8702) %>%
+  arrange(SIC) %>%
   distinct() %>%
   na.omit()
 
+Cenfreq <- table(CensusSIC$SIC) %>%
+  as.data.frame() %>%
+  filter(Freq != 1) %>%
+  rename(SIC = Var1)
+
+Cenfdesc <- CensusSIC %>%
+  semi_join(Cenfreq, by = c("SIC"))
+
+result <- Cenfdesc %>%
+  group_by(SIC) %>%
+  mutate(first_five_chars = substr(Censusdes, 1, 5),
+         has_shared_chars = duplicated(first_five_chars) | duplicated(first_five_chars, fromLast = TRUE)) %>%
+  ungroup() %>%
+  select(-first_five_chars)%>%
+  filter(has_shared_chars != TRUE)
+# the description remained same in all Census files
+
+
+# check if bls, Census files have the same codes and descriptions
+clean_census_sic <- CensusSIC %>%
+  group_by(SIC) %>%
+  slice(1) %>%
+  ungroup() %>%
+  rename(code = SIC, desc = Censusdes) %>%
+  mutate(source = "census")
+
+#check SIC codes frequency in BLS: no repeated codes
+blsfreq <- table(sic87_desc$code) %>%
+  as.data.frame()%>%
+  filter(Freq != 1) 
+
+# merge clean_census_sic and bls description to check desc differences
+bls_sic <- sic87_desc %>%
+  mutate(source = "bls")
+
+all_sic <- rbind(clean_census_sic, bls_sic) %>%
+  arrange(code) %>%
+  distinct() %>%
+  na.omit()
+
+all_freq <- table(all_sic$code) %>%
+  as.data.frame()%>%
+  filter(Freq != 1) %>%
+  rename(code = Var1)
+
+allfdesc <- all_sic %>%
+  semi_join(all_freq, by = c("code"))
+
+all_result <- allfdesc %>%
+  group_by(code) %>%
+  mutate(first_five_chars = substr(desc, 1, 5),
+         has_shared_chars = duplicated(first_five_chars) | duplicated(first_five_chars, fromLast = TRUE)) %>%
+  ungroup() %>%
+  select(-first_five_chars)%>%
+  filter(has_shared_chars != TRUE)
+# descriptions in the Census and BLS files are consistent
 
 # save
 save(sic87_desc,
      file = "./data/sic87_desc.RData", compress = "xz")
+
+

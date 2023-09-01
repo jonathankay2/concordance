@@ -1,3 +1,16 @@
+#' NAICS 1997 Description
+#'
+#' A dataset containing the description of products under the NAICS 1997
+#' classification.
+#'
+#' @format A data frame with 2341 rows and 2 variables:
+#' \describe{
+#'   \item{code}{NAICS 2002 Code}
+#'   \item{desc}{NAICS 2002 Description}
+#' }
+#' @source \url{https://www.census.gov/eos/www/naics/}
+"naics2002_desc"
+
 #' NAICS 2002 Description
 #'
 #' A dataset containing the description of products under the NAICS 2002
@@ -2538,3 +2551,35 @@
 #' @references Antras, Pol, and Davin Chor. 2012. "Measuring the Upstreamness of Production and Trade Flows." American Economic Review: Papers and Proceedings, Volume 102, Issue 3: 412-416.
 #' @source \url{https://scholar.harvard.edu/antras/publications/measuring-upstreamness-production-and-trade-flows}
 "upstream_us_detailed"
+
+#' SIC 1987 Description
+#'
+#' A dataset containing the description of products under the SIC 1987
+#' classification.
+#'
+#' @format A data frame with ???? rows and 2 variables:
+#' \describe{
+#'   \item{code}{SIC 1987 Code}
+#'   \item{desc}{SIC 1987 Description}
+#' }
+#' @source \url{https://www.bls.gov/oes/special-requests/oessic87.pdf}; \url{https://siccode.com/sic-code-lookup-directory}
+"sic87_desc"
+
+#' NAICS1997-SIC1987 Concordance
+#'
+#' A dataset containing concordances between NAICS2017 and ISIC4 classifications.
+#'
+#' @format A data frame with 1653 rows and 9 variables:
+#' \describe{
+#'   \item{NAICS2017_6d}{6-digit NAICS2017 Code}
+#'   \item{NAICS2017_5d}{5-digit NAICS2017 Code}
+#'   \item{NAICS2017_4d}{4-digit NAICS2017 Code}
+#'   \item{NAICS2017_3d}{3-digit NAICS2017 Code}
+#'   \item{NAICS2017_2d}{2-digit NAICS2017 Code}
+#'   \item{ISIC4_4d}{4-digit ISIC4 Code}
+#'   \item{ISIC4_3d}{3-digit ISIC4 Code}
+#'   \item{ISIC4_2d}{2-digit ISIC4 Code}
+#' }
+#' @source \url{https://www.census.gov/eos/www/naics/concordances/concordances.html}
+"naics2017_isic4"
+
