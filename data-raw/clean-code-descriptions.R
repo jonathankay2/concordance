@@ -19,9 +19,66 @@ library(stringr)
 ################################################################################
 # load downloaded data from Census
 # https://www.census.gov/naics/?68967
-naics1997_desc
+# read NAICS codes from the Census files
+s87n97.data.r <- read_excel("./data-raw/1987_SIC_to_1997_NAICS.xls") %>%
+  select("1997 NAICS", "1997 NAICS Titles and Part Indicators") %>%
+  rename(Censusdes = "1997 NAICS Titles and Part Indicators",
+         naics97 = "1997 NAICS")
 
+n97s87.data.r <- read_excel("./data-raw/1997_NAICS_to_1987_SIC.xls") %>%
+  select("1997 NAICS", "1997 NAICS Title") %>%
+  rename(Censusdes = "1997 NAICS Title",
+         naics97 = "1997 NAICS")
 
+n97n02.data.r <- read_csv("./data-raw/1997_NAICS_to_2002_NAICS.csv", col_types = "cccc") %>%
+  select("NAICS97", "1997 NAICS Title") %>%
+  rename(Censusdes = "1997 NAICS Title",
+         naics97 = "NAICS97")
+
+n02n97.data.r <- read_csv("./data-raw/2002_NAICS_to_1997_NAICS.csv", col_types = "cccc") %>%
+  select("NAICS97", "1997 NAICS Title") %>%
+  rename(Censusdes = "1997 NAICS Title",
+         naics97 = "NAICS97")
+
+Cennaics97 <- rbind(s87n97.data.r, n97s87.data.r, n97n02.data.r, n02n97.data.r) %>%
+  arrange(naics97) %>%
+  distinct() %>%
+  na.omit() %>% 
+  group_by(naics97) %>%
+  slice(1) %>%
+  ungroup()
+
+# check description consistency
+naics97_freq <- table(Cennaics97$naics97) %>%
+  as.data.frame()%>%
+  filter(Freq != 1) %>%
+  rename(naics97 = Var1)
+# no repeated naics97 codes with diffrent description versions
+
+# naics97fdesc <- Cennaics97 %>%
+#   semi_join(naics97_freq, by = c("naics97"))
+# 
+# naics97_result <- naics97fdesc %>%
+#   group_by(naics97) %>%
+#   mutate(first_five_chars = substr(Censusdes, 1, 5),
+#          has_shared_chars = duplicated(first_five_chars) | duplicated(first_five_chars, fromLast = TRUE)) %>%
+#   ungroup() %>%
+#   select(-first_five_chars)%>%
+#   filter(has_shared_chars != TRUE)
+
+# check if we need to pad 0 to the left (only for 5-digit codes)
+table(nchar(Cennaics97$naics97))
+# 510 five-digit naics codes
+naics1997_desc <- Cennaics97 %>%
+  filter(nchar(as.character(naics97)) == 5) %>%
+  mutate(naics97 = str_pad(naics97, width = 6, side = "right", pad = "0")) %>%
+  rbind(Cennaics97_5d, Cennaics97) %>%
+  arrange(naics97) %>%
+  distinct()
+
+#save
+save(naics1997_desc,
+     file = "./data/naics1997_desc.RData", compress = "xz")
 
 ################################################################################
 ## NAICS 2002
@@ -752,7 +809,7 @@ sic.des2 <- des.raw4 %>%
   rename(code = digit4, desc = SICdes)
 
 # combine
-sic87_desc <- rbind(sic.des2, sic.des3, sic.des4) %>%
+sicbls_desc <- rbind(sic.des2, sic.des3, sic.des4) %>%
   arrange(code) %>%
   distinct()
   # na.omit()
@@ -838,12 +895,12 @@ clean_census_sic <- CensusSIC %>%
   mutate(source = "census")
 
 #check SIC codes frequency in BLS: no repeated codes
-blsfreq <- table(sic87_desc$code) %>%
+blsfreq <- table(sicbls_desc$code) %>%
   as.data.frame()%>%
   filter(Freq != 1) 
 
 # merge clean_census_sic and bls description to check desc differences
-bls_sic <- sic87_desc %>%
+bls_sic <- sicbls_desc %>%
   mutate(source = "bls")
 
 all_sic <- rbind(clean_census_sic, bls_sic) %>%
@@ -867,6 +924,29 @@ all_result <- allfdesc %>%
   select(-first_five_chars)%>%
   filter(has_shared_chars != TRUE)
 # descriptions in the Census and BLS files are consistent
+
+#Then check whether sic codes in the Census files are covered in BLS file
+setdiff(clean_census_sic$code, sicbls_desc$code)
+#  [1] "89"   "8999" "91"   "9111" "9121" "9131" "9199"
+# [8] "92"   "9211" "9221" "9222" "9223" "9224" "9229"
+# [15] "93"   "9311" "94"   "9411" "9431" "9441" "9451"
+# [22] "95"   "9511" "9512" "9531" "9532" "96"   "9611"
+# [29] "9621" "9631" "9641" "9651" "9661" "97"   "9711"
+# [36] "9721" "9999" These codes are not included in bls 
+
+# add missing codes into bls
+missingsic <- clean_census_sic %>%
+  filter(code %in% c(89, 8999, 91, 9111, 9121, 9131, 9199, 
+         92, 9211, 9221, 9222, 9223, 9224, 9229,
+         93,   9311, 94,   9411, 9431, 9441, 9451,
+         95,   9511, 9512, 9531, 9532, 96,   9611,
+     9621, 9631, 9641, 9651, 9661, 97,   9711,
+        9721, 9999)) %>%
+  select(code, desc)
+
+sic87_desc <- rbind(sicbls_desc,missingsic) %>%
+  arrange()
+  
 
 # save
 save(sic87_desc,
