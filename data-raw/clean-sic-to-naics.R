@@ -115,8 +115,7 @@ sic87_naics97 <- sic87_naics97 %>%
          NAICS_5d = ifelse(nchar(NAICS_5d) == 5, NAICS_5d, NA),
          NAICS_4d = ifelse(nchar(NAICS_4d) == 4, NAICS_4d, NA),
          NAICS_3d = ifelse(nchar(NAICS_3d) == 3, NAICS_3d, NA)) %>%
-  filter(!is.na(SIC_2d)) %>%
-  filter(!is.na(NAICS_2d))
+  filter(!is.na(SIC_2d))
 
 # fix unusual 2-digit NAICS codes
 sic87_naics97 <- sic87_naics97 %>%
@@ -126,7 +125,8 @@ sic87_naics97 <- sic87_naics97 %>%
          NAICS_2d = if_else(NAICS_2d == "44", "44-45", NAICS_2d),
          NAICS_2d = if_else(NAICS_2d == "45", "44-45", NAICS_2d),
          NAICS_2d = if_else(NAICS_2d == "48", "48-49", NAICS_2d),
-         NAICS_2d = if_else(NAICS_2d == "49", "48-49", NAICS_2d))
+         NAICS_2d = if_else(NAICS_2d == "49", "48-49", NAICS_2d))  %>%
+  filter(!is.na(NAICS_2d))
 
 # save
 save(sic87_naics97,
@@ -228,7 +228,8 @@ sic87_naics02 <- sic87_naics02 %>%
          NAICS_2d = if_else(NAICS_2d == "44", "44-45", NAICS_2d),
          NAICS_2d = if_else(NAICS_2d == "45", "44-45", NAICS_2d),
          NAICS_2d = if_else(NAICS_2d == "48", "48-49", NAICS_2d),
-         NAICS_2d = if_else(NAICS_2d == "49", "48-49", NAICS_2d))
+         NAICS_2d = if_else(NAICS_2d == "49", "48-49", NAICS_2d)) %>%
+  filter(!is.na(NAICS_2d))
 
 # save
 save(sic87_naics02,

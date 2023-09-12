@@ -3,13 +3,13 @@
 #' A dataset containing the description of products under the NAICS 1997
 #' classification.
 #'
-#' @format A data frame with 2341 rows and 2 variables:
+#' @format A data frame with 1866 rows and 2 variables:
 #' \describe{
-#'   \item{code}{NAICS 2002 Code}
-#'   \item{desc}{NAICS 2002 Description}
+#'   \item{code}{NAICS 1997 Code}
+#'   \item{desc}{NAICS 1997 Description}
 #' }
-#' @source \url{https://www.census.gov/eos/www/naics/}
-"naics2002_desc"
+#' @source \url{https://www.census.gov/naics/}
+"naics1997_desc"
 
 #' NAICS 2002 Description
 #'
@@ -2114,6 +2114,11 @@
 #' @source \url{https://www.census.gov/eos/www/naics/concordances/concordances.html}
 "naics2012_naics2002"
 
+
+##############
+#need NAICS1997-NAICS2002, -NAICS2007, -NAICS2012, -NAICS2017, -NAICS2012, -NAICS2022 Concordance
+############
+
 #' ISIC4-ISIC3.1 Concordance
 #'
 #' A dataset containing concordances between ISIC4 and ISIC3.1 classifications.
@@ -2557,7 +2562,7 @@
 #' A dataset containing the description of products under the SIC 1987
 #' classification.
 #'
-#' @format A data frame with ???? rows and 2 variables:
+#' @format A data frame with 2030 rows and 2 variables:
 #' \describe{
 #'   \item{code}{SIC 1987 Code}
 #'   \item{desc}{SIC 1987 Description}
@@ -2565,21 +2570,21 @@
 #' @source \url{https://www.bls.gov/oes/special-requests/oessic87.pdf}; \url{https://siccode.com/sic-code-lookup-directory}
 "sic87_desc"
 
-#' NAICS1997-SIC1987 Concordance
+#' SIC1987-NAICS1997 Concordance
 #'
-#' A dataset containing concordances between NAICS2017 and ISIC4 classifications.
+#' A dataset containing concordances between  SIC1987 and NAICS1997 classifications.
 #'
-#' @format A data frame with 1653 rows and 9 variables:
+#' @format A data frame with 1867 rows and 8 variables:
 #' \describe{
 #'   \item{NAICS2017_6d}{6-digit NAICS2017 Code}
 #'   \item{NAICS2017_5d}{5-digit NAICS2017 Code}
 #'   \item{NAICS2017_4d}{4-digit NAICS2017 Code}
 #'   \item{NAICS2017_3d}{3-digit NAICS2017 Code}
 #'   \item{NAICS2017_2d}{2-digit NAICS2017 Code}
-#'   \item{ISIC4_4d}{4-digit ISIC4 Code}
-#'   \item{ISIC4_3d}{3-digit ISIC4 Code}
-#'   \item{ISIC4_2d}{2-digit ISIC4 Code}
+#'   \item{SIC4_4d}{4-digit SIC4 Code}
+#'   \item{SIC4_3d}{3-digit SIC4 Code}
+#'   \item{SIC4_2d}{2-digit SIC4 Code}
 #' }
 #' @source \url{https://www.census.gov/eos/www/naics/concordances/concordances.html}
-"naics2017_isic4"
+"sic1987_naics1997"
 

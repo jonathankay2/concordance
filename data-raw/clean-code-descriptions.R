@@ -72,8 +72,9 @@ table(nchar(Cennaics97$naics97))
 naics1997_desc <- Cennaics97 %>%
   filter(nchar(as.character(naics97)) == 5) %>%
   mutate(naics97 = str_pad(naics97, width = 6, side = "right", pad = "0")) %>%
-  rbind(Cennaics97_5d, Cennaics97) %>%
+  rbind(naics1997_desc, Cennaics97) %>%
   arrange(naics97) %>%
+  rename(code = naics97, desc = Censusdes) %>%
   distinct()
 
 #save
