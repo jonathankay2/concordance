@@ -85,48 +85,32 @@ concord_sic_naics <- function (sourcevar,
     
     dictionary <- concordance::sic87_naics97
     
-    # load version codes
-    naics.vec <- concordance::naics1997_desc
-    
-    naics.vec <- naics.vec %>%
-      filter(nchar(.data$code) == 6) %>%
-      pull(.data$code) %>%
-      unique()
-    
     # subset and clean
     dictionary <- dictionary %>%
-      filter(.data$NAICS_6d %in% naics.vec) %>%
-      rename(NAICS1997_6d = .data$NAICS_6d,
+      rename(SIC1987_4d = .data$SIC_4d, 
+             SIC1987_3d = .data$SIC_3d, 
+             SIC1987_2d = .data$SIC_2d,
+             NAICS1997_6d = .data$NAICS_6d,
              NAICS1997_5d = .data$NAICS_5d,
              NAICS1997_4d = .data$NAICS_4d,
              NAICS1997_3d = .data$NAICS_3d,
              NAICS1997_2d = .data$NAICS_2d) %>%
-     select(.data$SIC_4d, .data$SIC_3d, .data$SIC_2d,
-             .data$NAICS1997_6d, .data$NAICS1997_5d, .data$NAICS1997_4d, .data$NAICS1997_3d, .data$NAICS1997_2d) %>%
       distinct()
     
   } else if ((origin == "SIC1987" & destination == "NAICS2002") | (origin == "NAICS2002" & destination == "SIC1987")) {
     
     dictionary <- concordance::sic87_naics02
-    
-    # load version codes
-    naics.vec <- concordance::naics2002_desc
-    
-    naics.vec <- naics.vec %>%
-      filter(nchar(.data$code) == 6) %>%
-      pull(.data$code) %>%
-      unique()
-    
+
     # subset and clean
     dictionary <- dictionary %>%
-      filter(.data$NAICS_6d %in% naics.vec) %>%
-      rename(NAICS2002_6d = .data$NAICS_6d,
+      rename(SIC1987_4d = .data$SIC_4d, 
+             SIC1987_3d = .data$SIC_3d, 
+             SIC1987_2d = .data$SIC_2d,
+             NAICS2002_6d = .data$NAICS_6d,
              NAICS2002_5d = .data$NAICS_5d,
              NAICS2002_4d = .data$NAICS_4d,
              NAICS2002_3d = .data$NAICS_3d,
              NAICS2002_2d = .data$NAICS_2d) %>%
-      select(.data$SIC_4d, .data$SIC_3d, .data$SIC_2d,
-             .data$NAICS2002_6d, .data$NAICS2002_5d, .data$NAICS2002_4d, .data$NAICS2002_3d, .data$NAICS2002_2d) %>%
       distinct()
 
   } else {
