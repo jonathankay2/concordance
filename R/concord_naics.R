@@ -56,6 +56,11 @@ concord_naics <- function (sourcevar,
 
     dictionary <- concordance::naics2012_naics2002
 
+  } else if ((origin == "NAICS2002" & destination == "NAICS1997") | (origin == "NAICS1997" & destination == "NAICS2002")) {
+
+    # Converting this to a tibble manually - didn't realize that was how the other dictionaries were saved, and it throws an error otherwise.
+    dictionary <- as_tibble(concordance::naics2002_naics1997)
+
   } else {
 
     stop("Conversion dictionary not available.")
