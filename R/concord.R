@@ -129,7 +129,17 @@ concord <- function (sourcevar,
                               destination,
                               dest.digit,
                               all)
-    
+
+  # NAICS to/from SIC
+  } else if ((str_detect(origin, "SIC") & str_detect(destination, "NAICS")) |
+             (str_detect(origin, "NAICS") & str_detect(destination, "SIC"))) {
+
+    out <- concord_sic_naics(sourcevar,
+                             origin,
+                             destination,
+                             dest.digit,
+                             all)
+                          
   # HS to/from BEC
   } else if ((str_detect(origin, "HS") & str_detect(destination, "BEC")) |
              (str_detect(origin, "BEC") & str_detect(destination, "HS"))) {
