@@ -274,25 +274,34 @@ concord_sic_naics <- function(sourcevar,
     # sanity check
     if (length(sourcevar) == 0) {return(character(0))}
 
-    
+    # If we're converting between SIC 1987 and NAICS 2002, can use the standard dictionary-based conversion. Otherwise, need to take the multi-stage approach.
     if ((origin == "SIC1987" && destination == "NAICS2002") ||
         (origin == "NAICS2002" && destination == "SIC1987")) {
-            # Standard dictionary-based conversion based on the 1987 SIC to 2002 NAICS concordance.
             out <- concord_sic87_naics02(sourcevar, origin, destination, dest.digit, all)
             return(out)
-    } else if (origin == "SIC1987" && grepl("^NAICS", destination)) {
-        # 1) First hop: convert from SIC 1987 to NAICS 2002 (at 6-digit level for fidelity and including all matches).
-        hop1 <- concord_sic87_naics02(sourcevar, "SIC1987", "NAICS2002", dest.digit = 6, all = TRUE)
+    } else if (origin == "SIC1987" && grepl("^NAICS", destination) ||
+               grepl("^NAICS", origin) && destination == "SIC1987") {
+        # Check whether we're converting to or from SIC.
+        if(origin == "SIC1987"){
+            # 1) First hop: convert from SIC 1987 to NAICS 2002 (at 6-digit level for fidelity and including all matches).
+            hop1 <- concord_sic87_naics02(sourcevar, "SIC1987", "NAICS2002", dest.digit = 6, all = TRUE)
 
-        # Collect all mid-codes we need to expand in hop 2
-        mids_all <- unique(unlist(lapply(hop1, `[[`, "match")))
-        mids_all <- mids_all[!is.na(mids_all)]
+            # Collect all mid-codes we need to expand in hop 2
+            mids_all <- unique(unlist(lapply(hop1, `[[`, "match")))
+            mids_all <- mids_all[!is.na(mids_all)]
 
-        # 2) Second hop: Convert our mid-codes from 2002 NAICS to the destination NAICS using the existing NAICS converter. 
-        # Again, stick to the 6-digit level for fidelity and include all matches.
-        hop2 <- concord_naics(mids_all, "NAICS2002", destination, 6, TRUE)
+            # 2) Second hop: Convert our mid-codes from 2002 NAICS to the destination NAICS using the existing NAICS converter. 
+            # Again, stick to the 6-digit level for fidelity and include all matches.
+            hop2 <- concord_naics(mids_all, "NAICS2002", destination, 6, TRUE)
+        } else {
+            hop1 <- concord_naics(sourcevar, origin, "NAICS2002", dest.digit = 6, all = TRUE)
+            mids_all <- unique(unlist(lapply(hop1, `[[`, "match")))
+            mids_all <- mids_all[!is.na(mids_all)]
+            
+            hop2 <- concord_sic87_naics02(mids_all, "NAICS2002", "SIC1987", dest.digit = 4, all = TRUE) # 4 digits is most granular for SIC.
+        }
 
-        # 3) For each SIC origin code, multiply the two stages of weights and sum duplicates.
+        # 3) For each origin code, multiply the two stages of weights and sum duplicates.
         out_list <- map(sourcevar, function(src) {
           # Get hop1 matches and handle NA/null cases
           h1 <- hop1[[src]]
@@ -361,4 +370,3 @@ concord_sic_naics <- function(sourcevar,
         }
     }
 }
-
